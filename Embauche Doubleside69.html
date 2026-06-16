@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fiche d'embauche — Doubleside 69</title>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script>
+  // Filet de secours si le 1er CDN est bloqué
+  window.addEventListener('DOMContentLoaded',function(){
+    if(!window.jspdf){
+      var s=document.createElement('script');
+      s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+      document.head.appendChild(s);
+    }
+  });
+</script>
+<style>
+  :root{
+    --nuit:#15152b;
+    --nuit-2:#1f1f3d;
+    --corail:#e94560;
+    --corail-dk:#c9304a;
+    --paper:#f6f6fa;
+    --line:#d9d9e6;
+    --ink:#22223a;
+    --muted:#75758c;
+    --ok:#2fa36b;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--paper);color:var(--ink);
+    line-height:1.5;font-size:16px;
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  /* En-tête */
+  header{
+    background:linear-gradient(160deg,var(--nuit) 0%,var(--nuit-2) 100%);
+    color:#fff;padding:26px 20px 22px;
+    border-bottom:3px solid var(--corail);
+    position:relative;
+  }
+  header .brand{font-size:13px;letter-spacing:.22em;text-transform:uppercase;color:#b9b9d6;font-weight:600}
+  header h1{margin:6px 0 4px;font-size:24px;font-weight:800;letter-spacing:-.01em}
+  header p{margin:0;font-size:13px;color:#a9a9c8}
+  /* Conteneur */
+  main{max-width:680px;margin:0 auto;padding:18px 16px 40px}
+  /* Progression */
+  .progress{
+    position:sticky;top:0;z-index:20;
+    background:var(--paper);padding:12px 0 10px;margin:-18px -16px 14px;
+    padding-left:16px;padding-right:16px;
+    border-bottom:1px solid var(--line);
+  }
+  .progress .bar{height:6px;border-radius:6px;background:#e3e3ee;overflow:hidden}
+  .progress .fill{height:100%;width:0;background:var(--corail);transition:width .3s ease}
+  .progress .lbl{font-size:12px;color:var(--muted);margin-top:6px}
+  /* Sections */
+  section.card{
+    background:#fff;border:1px solid var(--line);border-radius:var(--radius);
+    margin:0 0 16px;overflow:hidden;
+  }
+  section.card > h2{
+    margin:0;padding:14px 16px;font-size:15px;font-weight:700;
+    background:#fbfbfe;border-bottom:1px solid var(--line);
+    display:flex;align-items:center;gap:10px;
+  }
+  section.card > h2 .n{
+    background:var(--nuit);color:#fff;font-size:12px;font-weight:700;
+    width:24px;height:24px;border-radius:7px;display:grid;place-items:center;flex:0 0 auto;
+  }
+  .body{padding:14px 16px}
+  /* Champs */
+  .field{margin:0 0 14px}
+  .field:last-child{margin-bottom:0}
+  .row{display:flex;gap:12px}
+  .row > .field{flex:1}
+  label{display:block;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:6px}
+  label .opt{color:var(--muted);font-weight:500}
+  input,select,textarea{
+    width:100%;font-size:16px;font-family:inherit;color:var(--ink);
+    padding:12px 13px;border:1.5px solid var(--line);border-radius:10px;background:#fff;
+    transition:border-color .15s,box-shadow .15s;
+  }
+  input:focus,select:focus,textarea:focus{
+    outline:none;border-color:var(--corail);box-shadow:0 0 0 3px rgba(233,69,96,.13);
+  }
+  select{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2375758c' stroke-width='2.5'><path d='M6 9l6 6 6-6'/></svg>");background-repeat:no-repeat;background-position:right 13px center;padding-right:38px}
+  textarea{resize:vertical;min-height:64px}
+  /* Choix mutuelle (radios) */
+  .choices{display:flex;gap:10px;flex-wrap:wrap}
+  .choices label{
+    flex:1;min-width:130px;margin:0;display:flex;align-items:center;gap:9px;
+    padding:12px;border:1.5px solid var(--line);border-radius:10px;cursor:pointer;font-weight:500;
+  }
+  .choices input{width:auto}
+  .choices label:has(input:checked){border-color:var(--corail);background:rgba(233,69,96,.06)}
+  /* Upload documents */
+  .doc{
+    border:1.5px dashed var(--line);border-radius:12px;padding:14px;
+    display:flex;align-items:center;gap:13px;margin-bottom:12px;background:#fcfcff;
+    transition:border-color .15s,background .15s;
+  }
+  .doc.filled{border-style:solid;border-color:var(--ok);background:rgba(47,163,107,.05)}
+  .doc .thumb{
+    width:54px;height:54px;border-radius:9px;flex:0 0 auto;background:#eee;
+    display:grid;place-items:center;overflow:hidden;border:1px solid var(--line);
+  }
+  .doc .thumb img{width:100%;height:100%;object-fit:cover}
+  .doc .thumb svg{width:22px;height:22px;stroke:var(--muted)}
+  .doc .meta{flex:1;min-width:0}
+  .doc .meta .t{font-size:14px;font-weight:600}
+  .doc .meta .s{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .doc.filled .meta .s{color:var(--ok);font-weight:600}
+  .doc .act{flex:0 0 auto}
+  .doc input[type=file]{display:none}
+  .btn-file{
+    background:var(--nuit);color:#fff;border:none;font-size:13px;font-weight:600;
+    padding:9px 13px;border-radius:9px;cursor:pointer;white-space:nowrap;
+  }
+  .doc.filled .btn-file{background:#fff;color:var(--nuit);border:1.5px solid var(--line)}
+  /* Bouton final */
+  .actions{position:sticky;bottom:0;background:linear-gradient(transparent,var(--paper) 22%);
+    padding:18px 0 8px;margin-top:6px}
+  .submit{
+    width:100%;background:var(--corail);color:#fff;border:none;
+    font-size:17px;font-weight:700;padding:16px;border-radius:13px;cursor:pointer;
+    box-shadow:0 6px 18px rgba(233,69,96,.32);transition:transform .1s,background .15s;
+  }
+  .submit:active{transform:translateY(1px)}
+  .submit:disabled{background:#bdbdcf;box-shadow:none;cursor:default}
+  .hint{font-size:12.5px;color:var(--muted);text-align:center;margin:10px 4px 0}
+  .err{color:var(--corail-dk);font-size:12.5px;margin-top:5px;font-weight:600;display:none}
+  .field.invalid input,.field.invalid select{border-color:var(--corail)}
+  .field.invalid .err{display:block}
+  footer{text-align:center;font-size:11px;color:var(--muted);padding:8px 16px 26px}
+  /* Toast */
+  .toast{
+    position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(120%);
+    background:var(--nuit);color:#fff;padding:13px 18px;border-radius:11px;font-size:14px;
+    box-shadow:0 8px 24px rgba(0,0,0,.25);transition:transform .35s ease;z-index:60;max-width:90vw;text-align:center;
+  }
+  .toast.show{transform:translateX(-50%) translateY(0)}
+  /* Panneau resultat PDF */
+  #resultPanel{
+    position:fixed;inset:0;z-index:80;display:none;
+    background:rgba(21,21,43,.55);backdrop-filter:blur(3px);
+    align-items:flex-end;justify-content:center;
+    padding:0 0 env(safe-area-inset-bottom);
+  }
+  #resultPanel.show{display:flex;animation:fade .2s ease}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .rp-box{
+    background:#fff;width:100%;max-width:680px;border-radius:22px 22px 0 0;
+    padding:26px 22px calc(26px + env(safe-area-inset-bottom));text-align:center;
+    box-shadow:0 -10px 40px rgba(0,0,0,.3);animation:rise .28s cubic-bezier(.2,.8,.2,1);
+  }
+  @keyframes rise{from{transform:translateY(100%)}to{transform:translateY(0)}}
+  .rp-check{
+    width:52px;height:52px;border-radius:50%;background:var(--ok);color:#fff;
+    font-size:28px;font-weight:700;display:grid;place-items:center;margin:0 auto 12px;
+  }
+  .rp-box h3{margin:0 0 6px;font-size:20px;font-weight:800;color:var(--nuit)}
+  .rp-box p{margin:0 0 16px;font-size:14px;color:var(--muted);line-height:1.45}
+  .rp-btn{
+    display:block;text-decoration:none;font-size:17px;font-weight:700;
+    padding:15px;border-radius:13px;margin-bottom:10px;
+    background:var(--corail);color:#fff;box-shadow:0 6px 16px rgba(233,69,96,.3);
+  }
+  .rp-btn.rp-ghost{background:#fff;color:var(--nuit);border:1.5px solid var(--line);box-shadow:none}
+  .rp-link{
+    background:none;border:none;color:var(--muted);font-size:14px;
+    padding:8px;margin-top:2px;cursor:pointer;text-decoration:underline;
+  }
+  .rp-tip{
+    margin-top:14px!important;font-size:12.5px;color:var(--muted);
+    background:var(--paper);border-radius:10px;padding:11px 13px;line-height:1.5;text-align:left;
+  }
+  .rp-tip b{color:var(--ink)}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">Doubleside 69 · Lyon</div>
+  <h1>Fiche de renseignements</h1>
+  <p>À remplir par le salarié lors de l'embauche</p>
+</header>
+
+<main>
+  <div class="progress">
+    <div class="bar"><div class="fill" id="fill"></div></div>
+    <div class="lbl" id="plbl">0 % complété</div>
+  </div>
+
+  <form id="form" novalidate>
+
+    <!-- 1. IDENTITÉ -->
+    <section class="card">
+      <h2><span class="n">1</span> Identité</h2>
+      <div class="body">
+        <div class="row">
+          <div class="field" style="flex:0 0 38%">
+            <label>Civilité</label>
+            <select name="civilite" required>
+              <option value="">—</option><option>Madame</option><option>Monsieur</option><option>Autre</option>
+            </select>
+            <div class="err">Requis</div>
+          </div>
+          <div class="field">
+            <label>Nom de naissance</label>
+            <input name="nom" required>
+            <div class="err">Requis</div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Nom d'usage <span class="opt">(optionnel)</span></label><input name="nom_usage"></div>
+          <div class="field"><label>Prénom(s)</label><input name="prenom" required><div class="err">Requis</div></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Date de naissance</label><input name="naissance" type="date" required><div class="err">Requis</div></div>
+          <div class="field"><label>Lieu de naissance</label><input name="lieu_naissance" placeholder="Ville"></div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Nationalité</label>
+            <select name="nationalite"><option value="">—</option><option>Française</option><option>Union Européenne</option><option>Hors UE</option></select>
+          </div>
+          <div class="field">
+            <label>Situation familiale</label>
+            <select name="famille"><option value="">—</option><option>Célibataire</option><option>Marié(e)</option><option>Pacsé(e)</option><option>Divorcé(e)</option><option>Veuf(ve)</option><option>Union libre</option></select>
+          </div>
+        </div>
+        <div class="field"><label>Nombre d'enfants à charge <span class="opt">(optionnel)</span></label><input name="enfants" type="number" min="0" inputmode="numeric" style="max-width:140px"></div>
+      </div>
+    </section>
+
+    <!-- 2. COORDONNÉES -->
+    <section class="card">
+      <h2><span class="n">2</span> Coordonnées</h2>
+      <div class="body">
+        <div class="field"><label>Adresse</label><input name="adresse" placeholder="N° et rue" required><div class="err">Requis</div></div>
+        <div class="field"><label>Complément <span class="opt">(optionnel)</span></label><input name="adresse2" placeholder="Bât, étage, appt"></div>
+        <div class="row">
+          <div class="field" style="flex:0 0 38%"><label>Code postal</label><input name="cp" inputmode="numeric" required><div class="err">Requis</div></div>
+          <div class="field"><label>Ville</label><input name="ville" required><div class="err">Requis</div></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Téléphone</label><input name="tel" type="tel" inputmode="tel" placeholder="06 …" required><div class="err">Requis</div></div>
+          <div class="field"><label>E-mail</label><input name="email" type="email" inputmode="email" required><div class="err">Requis</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. CONTRAT -->
+    <section class="card">
+      <h2><span class="n">3</span> Contrat & poste</h2>
+      <div class="body">
+        <div class="row">
+          <div class="field" style="flex:0 0 40%">
+            <label>Type de contrat</label>
+            <select name="contrat" required><option value="">—</option><option>CDI</option><option>CDD</option></select>
+            <div class="err">Requis</div>
+          </div>
+          <div class="field"><label>Intitulé du poste</label><input name="poste" required><div class="err">Requis</div></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Date d'entrée</label><input name="entree" type="date"></div>
+          <div class="field">
+            <label>Temps de travail</label>
+            <select name="temps"><option value="">—</option><option>Temps plein</option><option>Temps partiel</option></select>
+          </div>
+        </div>
+        <div class="field" id="cdd_wrap" style="display:none"><label>Fin de CDD</label><input name="fin_cdd" type="date"></div>
+      </div>
+    </section>
+
+    <!-- 4. SÉCU & SANTÉ -->
+    <section class="card">
+      <h2><span class="n">4</span> Sécurité sociale</h2>
+      <div class="body">
+        <div class="field"><label>N° de sécurité sociale</label><input name="secu" inputmode="numeric" placeholder="13 chiffres + clé"></div>
+        <div class="field">
+          <label>Caisse / régime</label>
+          <select name="caisse"><option value="">—</option><option>Régime général (CPAM)</option><option>MSA</option><option>Autre</option></select>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. MUTUELLE -->
+    <section class="card">
+      <h2><span class="n">5</span> Mutuelle d'entreprise</h2>
+      <div class="body">
+        <div class="field">
+          <label>Adhésion</label>
+          <div class="choices">
+            <label><input type="radio" name="mutuelle" value="J'adhère" checked> J'adhère</label>
+            <label><input type="radio" name="mutuelle" value="Je refuse (dispense)"> Je refuse (dispense)</label>
+          </div>
+        </div>
+        <div class="field" id="disp_wrap" style="display:none">
+          <label>Motif de dispense</label>
+          <select name="motif_disp"><option value="">—</option><option>Couvert par mutuelle du conjoint</option><option>Couvert ailleurs (justificatif)</option><option>CDD court / temps très partiel</option></select>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. BANQUE -->
+    <section class="card">
+      <h2><span class="n">6</span> Coordonnées bancaires</h2>
+      <div class="body">
+        <div class="field"><label>Titulaire du compte</label><input name="titulaire"></div>
+        <div class="row">
+          <div class="field" style="flex:0 0 64%"><label>IBAN</label><input name="iban" placeholder="FR76 …"></div>
+          <div class="field"><label>BIC</label><input name="bic"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. URGENCE -->
+    <section class="card">
+      <h2><span class="n">7</span> Personne à prévenir</h2>
+      <div class="body">
+        <div class="row">
+          <div class="field"><label>Nom et prénom</label><input name="urg_nom"></div>
+          <div class="field">
+            <label>Lien</label>
+            <select name="urg_lien"><option value="">—</option><option>Conjoint(e)</option><option>Parent</option><option>Enfant</option><option>Ami(e)</option><option>Autre</option></select>
+          </div>
+        </div>
+        <div class="field"><label>Téléphone</label><input name="urg_tel" type="tel" inputmode="tel"></div>
+      </div>
+    </section>
+
+    <!-- 8. DOCUMENTS -->
+    <section class="card">
+      <h2><span class="n">8</span> Documents à joindre</h2>
+      <div class="body" id="docs">
+        <!-- généré en JS -->
+      </div>
+    </section>
+
+    <div class="actions">
+      <button type="button" class="submit" id="go">Générer le PDF complet</button>
+      <p class="hint">Un seul PDF est créé sur votre téléphone (infos + photos des documents). Enregistrez-le ou partagez-le pour le renvoyer.</p>
+    </div>
+
+  </form>
+</main>
+
+<footer>Doubleside 69 · Données traitées en interne (RGPD) · Aucun envoi automatique, tout reste sur votre appareil.</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const DOCS = [
+  {key:'cni_recto', label:"Pièce d'identité — recto"},
+  {key:'cni_verso', label:"Pièce d'identité — verso"},
+  {key:'rib',       label:"RIB"},
+  {key:'vitale',    label:"Carte Vitale / attestation"},
+  {key:'domicile',  label:"Justificatif de domicile"},
+  {key:'autre',     label:"Autre (titre de séjour, diplôme…)"},
+];
+const files = {}; // key -> {dataUrl, name, type}
+
+const docsEl = document.getElementById('docs');
+const fileIcon = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>`;
+
+DOCS.forEach(d=>{
+  const row=document.createElement('div');
+  row.className='doc';row.id='doc_'+d.key;
+  row.innerHTML=`
+    <div class="thumb" id="thumb_${d.key}">${fileIcon}</div>
+    <div class="meta"><div class="t">${d.label}</div><div class="s" id="s_${d.key}">Aucun fichier</div></div>
+    <div class="act">
+      <label class="btn-file">Ajouter
+        <input type="file" accept="image/*" id="file_${d.key}">
+      </label>
+    </div>`;
+  docsEl.appendChild(row);
+
+  row.querySelector('#file_'+d.key).addEventListener('change',e=>{
+    const f=e.target.files[0]; if(!f) return;
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      files[d.key]={dataUrl:ev.target.result,name:f.name,type:f.type};
+      const t=document.getElementById('thumb_'+d.key);
+      if(f.type.startsWith('image/')){t.innerHTML=`<img src="${ev.target.result}">`;}
+      document.getElementById('s_'+d.key).textContent='Ajouté ✓';
+      row.classList.add('filled');
+      row.querySelector('.btn-file').lastChild.textContent='';
+      row.querySelector('.btn-file').firstChild.textContent='Remplacer';
+      updateProgress();
+    };
+    reader.readAsDataURL(f);
+  });
+});
+
+// Champs conditionnels
+const form=document.getElementById('form');
+form.contrat.addEventListener('change',e=>{
+  document.getElementById('cdd_wrap').style.display = e.target.value==='CDD'?'block':'none';
+});
+form.querySelectorAll('[name=mutuelle]').forEach(r=>r.addEventListener('change',()=>{
+  const refuse=form.querySelector('[name=mutuelle]:checked').value.includes('refuse');
+  document.getElementById('disp_wrap').style.display=refuse?'block':'none';
+}));
+
+// Progression
+function updateProgress(){
+  const req=[...form.querySelectorAll('[required]')];
+  const done=req.filter(f=>f.value.trim()!=='').length;
+  const docDone=Object.keys(files).length;
+  const total=req.length+DOCS.length;
+  const pct=Math.round(((done+docDone)/total)*100);
+  document.getElementById('fill').style.width=pct+'%';
+  document.getElementById('plbl').textContent=pct+' % complété';
+}
+form.addEventListener('input',updateProgress);
+updateProgress();
+
+function toast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3200);
+}
+
+// Validation + génération PDF
+document.getElementById('go').addEventListener('click',async()=>{
+  let firstInvalid=null;
+  form.querySelectorAll('.field').forEach(f=>f.classList.remove('invalid'));
+  form.querySelectorAll('[required]').forEach(inp=>{
+    if(inp.value.trim()===''){
+      const field=inp.closest('.field');field.classList.add('invalid');
+      if(!firstInvalid) firstInvalid=field;
+    }
+  });
+  if(firstInvalid){
+    firstInvalid.scrollIntoView({behavior:'smooth',block:'center'});
+    toast('Complétez les champs en rouge');
+    return;
+  }
+  const btn=document.getElementById('go');
+  btn.disabled=true;btn.textContent='Génération en cours…';
+  try{ await buildPDF(); toast('PDF créé — enregistrez ou partagez'); }
+  catch(err){
+    console.error(err);
+    if(String(err.message).includes('jsPDF')) toast('Connexion internet requise pour créer le PDF');
+    else toast('Erreur lors de la génération');
+  }
+  btn.disabled=false;btn.textContent='Générer le PDF complet';
+});
+
+function v(n){const el=form[n];return el?(el.value||'').trim():'';}
+
+async function buildPDF(){
+  if(!window.jspdf||!window.jspdf.jsPDF){
+    toast('Connexion requise pour générer le PDF (chargement de l\'outil)');
+    throw new Error('jsPDF non chargé');
+  }
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:'mm',format:'a4'});
+  const W=210,M=16;let y=0;
+  const NUIT=[21,21,43],CORAIL=[233,69,96],MUTED=[117,117,140],INK=[34,34,58];
+
+  function band(sub){
+    doc.setFillColor(...NUIT);doc.rect(0,0,W,30,'F');
+    doc.setFillColor(...CORAIL);doc.rect(0,30,W,1.3,'F');
+    doc.setTextColor(255);doc.setFont('helvetica','bold');doc.setFontSize(17);
+    doc.text('DOUBLESIDE 69',M,15);
+    doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(190,190,214);
+    doc.text('Fiche de renseignements — Embauche'+(sub?' (suite)':''),M,23);
+    y=40;
+  }
+  function foot(){
+    doc.setFontSize(7);doc.setTextColor(...MUTED);
+    doc.text('Doubleside 69 · Lyon — Document interne (RGPD)',M,290);
+  }
+  function need(h){if(y+h>278){foot();doc.addPage();band(true);}}
+  function sec(t){
+    need(16);y+=2;doc.setFillColor(244,244,248);doc.rect(M,y,W-2*M,8,'F');
+    doc.setFillColor(...CORAIL);doc.rect(M,y,1.4,8,'F');
+    doc.setTextColor(...NUIT);doc.setFont('helvetica','bold');doc.setFontSize(10.5);
+    doc.text(t,M+5,y+5.6);y+=13;
+  }
+  function line(lbl,val){
+    need(9);doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(...MUTED);
+    doc.text(lbl.toUpperCase(),M,y);
+    doc.setFont('helvetica','bold');doc.setFontSize(10.5);doc.setTextColor(...INK);
+    const txt=val&&val!==''?val:'—';
+    doc.text(doc.splitTextToSize(txt,W-2*M),M,y+5);y+=12;
+  }
+  function pair(l1,v1,l2,v2){
+    need(12);const half=(W-2*M)/2;
+    doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(...MUTED);
+    doc.text(l1.toUpperCase(),M,y);doc.text(l2.toUpperCase(),M+half,y);
+    doc.setFont('helvetica','bold');doc.setFontSize(10.5);doc.setTextColor(...INK);
+    doc.text((v1||'—'),M,y+5);doc.text((v2||'—'),M+half,y+5);y+=12;
+  }
+
+  band(false);
+
+  sec('1 · Identité');
+  pair('Civilité',v('civilite'),'Nationalité',v('nationalite'));
+  line('Nom',[v('civilite'),(v('nom')||'').toUpperCase(),v('nom_usage')?'('+v('nom_usage')+')':'',v('prenom')].filter(Boolean).join(' '));
+  pair('Naissance',fmtDate(v('naissance')),'Lieu',v('lieu_naissance'));
+  pair('Situation',v('famille'),'Enfants à charge',v('enfants'));
+
+  sec('2 · Coordonnées');
+  line('Adresse',[v('adresse'),v('adresse2'),(v('cp')+' '+v('ville')).trim()].filter(Boolean).join(', '));
+  pair('Téléphone',v('tel'),'E-mail',v('email'));
+
+  sec('3 · Contrat & poste');
+  pair('Type',v('contrat'),'Poste',v('poste'));
+  pair('Entrée',fmtDate(v('entree')),'Temps',v('temps'));
+  if(v('contrat')==='CDD') line('Fin de CDD',fmtDate(v('fin_cdd')));
+
+  sec('4 · Sécurité sociale');
+  pair('N° Sécu',v('secu'),'Caisse',v('caisse'));
+
+  sec('5 · Mutuelle');
+  line('Adhésion',v('mutuelle'));
+  if((v('mutuelle')||'').includes('refuse')) line('Motif',v('motif_disp'));
+
+  sec('6 · Coordonnées bancaires');
+  line('Titulaire',v('titulaire'));
+  pair('IBAN',v('iban'),'BIC',v('bic'));
+
+  sec('7 · Personne à prévenir');
+  pair('Nom',v('urg_nom'),'Lien',v('urg_lien'));
+  line('Téléphone',v('urg_tel'));
+
+  // Pages documents
+  const keys=Object.keys(files);
+  if(keys.length){
+    DOCS.forEach(d=>{
+      if(!files[d.key]) return;
+      const f=files[d.key];
+      doc.addPage();band(true);
+      sec('Pièce jointe · '+d.label);
+      try{
+        const fmt=(f.type.includes('png'))?'PNG':'JPEG';
+        const props=doc.getImageProperties(f.dataUrl);
+        const maxW=W-2*M, maxH=225;
+        let w=maxW, h=w*props.height/props.width;
+        if(h>maxH){h=maxH;w=h*props.width/props.height;}
+        const x=M+(maxW-w)/2;
+        doc.addImage(f.dataUrl,fmt,x,y,w,h);
+      }catch(e){
+        line('Fichier',f.name+' (aperçu indisponible)');
+      }
+      foot();
+    });
+  }
+  foot();
+
+  const nom=(v('prenom')+' '+v('nom')).trim()||'salarié';
+  const fileName='Embauche_'+(v('nom')||'Doubleside').toUpperCase().replace(/[^A-Z0-9]/g,'')+'.pdf';
+  const blob=doc.output('blob');
+
+  // 1) Tentative de partage natif iOS (le plus pratique quand ça marche)
+  try{
+    const file=new File([blob],fileName,{type:'application/pdf'});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){
+      await navigator.share({files:[file],title:fileName,text:'Fiche d\'embauche '+nom});
+      return;
+    }
+  }catch(e){ /* annulé ou indisponible → on passe au plan B */ }
+
+  // 2) Plan B fiable : on affiche le PDF dans la page avec un bouton clair.
+  const url=URL.createObjectURL(blob);
+  showResult(url,fileName);
+}
+
+// Écran de résultat : aperçu + bouton d'ouverture/enregistrement
+function showResult(url,fileName){
+  let panel=document.getElementById('resultPanel');
+  if(!panel){
+    panel=document.createElement('div');
+    panel.id='resultPanel';
+    panel.innerHTML=`
+      <div class="rp-box">
+        <div class="rp-check">✓</div>
+        <h3>PDF prêt</h3>
+        <p>Appuyez sur le bouton ci-dessous pour ouvrir le PDF,<br>puis enregistrez-le ou partagez-le.</p>
+        <a id="rp-open" class="rp-btn" target="_blank" rel="noopener">Ouvrir le PDF</a>
+        <a id="rp-dl" class="rp-btn rp-ghost">Télécharger le fichier</a>
+        <button id="rp-close" class="rp-link">Revenir au formulaire</button>
+        <p class="rp-tip">Sur iPhone : une fois le PDF ouvert, appuyez sur l'icône <b>Partager</b> (carré avec une flèche) puis <b>« Enregistrer dans Fichiers »</b> ou envoyez-le par message.</p>
+      </div>`;
+    document.body.appendChild(panel);
+    document.getElementById('rp-close').addEventListener('click',()=>panel.classList.remove('show'));
+  }
+  const open=document.getElementById('rp-open');
+  const dl=document.getElementById('rp-dl');
+  open.href=url;
+  dl.href=url; dl.download=fileName;
+  panel.classList.add('show');
+}
+
+function fmtDate(d){
+  if(!d) return '';
+  const [y,m,j]=d.split('-');if(!j) return d;
+  return `${j}/${m}/${y}`;
+}
+</script>
+</body>
+</html>
